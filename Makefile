@@ -1,0 +1,2 @@
+COMPONENT=EchoBufferC
+include $(MAKERULES)
