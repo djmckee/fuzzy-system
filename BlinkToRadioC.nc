@@ -23,9 +23,12 @@ implementation {
 
   /**
    * The timeout time in milliseconds.
+   * I would make this value a compile-time constant definition in
+   * BlinkToRadio.h, but we haven't been told that we can modify that
+   * file in this coursework, so an implementation constant here
+   * shall have to suffice.
    */
    uint16_t timeoutPeriod = 2000;
-
 
   /**
    * A placeholder variable to keep track of the current sequence number.
@@ -99,6 +102,57 @@ implementation {
     uint8_t len = call Packet.payloadLength(msg);
     BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*)(call Packet.getPayload(msg, len));
     call Leds.set(btrpkt->counter);
+
+    // Is the packet we recieved of an ackowledgement packet type?
+    nx_uint16_t type = btrpkt->type;
+
+    if (type == TYPE_ACK) {
+      // Message acknowledged, set flag boolean so that next bit of data will get sent...
+      hasAcknowledgedMessage = TRUE;
+
+      // Stop timeout from firing and sending current message again in the meantime...
+      call AckTimoutTimer.stop();
+
+    } else if (type == TYPE_DATA) {
+      // Packet is data - send ackowledgement back to sender...
+      // (I used the code I wrote for Tutorial 4 to help with this acknowledgement packet...)
+
+      // Set the packet to send to have the same properties as the message recieved...
+      call AMPacket.setType(sendMsg, AM_BLINKTORADIO);
+      call AMPacket.setDestination(sendMsg, DEST_ECHO);
+      call AMPacket.setSource(sendMsg, TOS_NODE_ID);
+
+      uint16_t messageLength = sizeof(BlinkToRadioMsg);
+
+      call AMPacket.setPayloadLength(sendMsg, messageLength);
+
+      // Instantiate a new acknowledgement message from the sendMsg
+      BlinkToRadioMsg *ackMsg = (BlinkToRadioMsg*)(call Packet.getPayload(sendMsg, messageLength));
+
+      // Set up the message with the properties of an acknowledgement to the mote we're communicating with...
+      ackMsg->type = TYPE_ACK;
+      ackMsg->nodeid = TOS_NODE_ID;
+      ackMsg->counter = counter;
+
+      // TODO: Sequence number mindfuck.
+      /*
+      // If the previous sequence number was even, make this current one odd, and ensure the next is odd...
+      if (sequenceNumber == 0)  {
+        // Ensure the next sequence number is odd...
+        sequenceNumber = 1;
+      } else {
+
+      }
+
+      // And set sequence number of the message to the current value
+      ackMsg->seq = sequenceNumber;
+      */
+
+      // Send acknowledgement message that we've set up...
+      call AMSendReceiveI.send(sendMsg);
+
+    }
+
     return msg; // no need to make msg point to new buffer as msg is no longer needed
   }
 

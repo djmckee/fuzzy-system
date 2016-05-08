@@ -1,6 +1,6 @@
 #ifndef BLINKTORADIO_H
 #define BLINKTORADIO_H
- 
+
 enum {
   AM_BLINKTORADIO = 6,
   DEST_ECHO = 2,
@@ -11,7 +11,7 @@ enum {
   TYPE_DATA = 0x55,
   TYPE_ACK = 0xCC,
 };
- 
+
 typedef nx_struct BlinkToRadioMsg {
   nx_uint16_t type;
   nx_uint16_t seq;
