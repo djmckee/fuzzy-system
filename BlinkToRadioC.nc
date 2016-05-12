@@ -79,6 +79,7 @@ implementation {
 
       }
 
+      // TODO: Fix sequence number mindfuck.
       // Flag the seqeunce number so that it is inverted on next send.
       positiveSequence = !positiveSequence;
 
