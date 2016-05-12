@@ -3,7 +3,7 @@
 
 enum {
   AM_BLINKTORADIO = 6,
-  DEST_ECHO = 2,
+  DEST_ECHO = 179,
   TIMER_PERIOD_MILLI = 1000,
 };
 
