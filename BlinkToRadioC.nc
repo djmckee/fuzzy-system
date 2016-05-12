@@ -47,9 +47,7 @@ implementation {
     }
   };
 
-  event void RadioControl.stopDone(error_t error){
-
-  };
+  event void RadioControl.stopDone(error_t error){ };
 
   event void Timer0.fired() {
     BlinkToRadioMsg* btrpkt;
