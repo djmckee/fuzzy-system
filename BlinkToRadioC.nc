@@ -33,6 +33,9 @@ implementation {
 
   bool isFirstSend = TRUE;
 
+  
+  uint16_t ackMsgTimeout = 2000;
+
   event void Boot.booted() {
     call RadioControl.start();
   };
@@ -66,6 +69,7 @@ implementation {
       counter++;
       btrpkt->type = TYPE_DATA;
 
+      // Work out sequence number so that it's the inverse of last packet send.
       if (positiveSequence) {
         btrpkt->seq = 1;
 
@@ -74,6 +78,7 @@ implementation {
 
       }
 
+      // Flag the seqeunce number so that it is inverted on next send.
       positiveSequence = !positiveSequence;
 
       btrpkt->nodeid = TOS_NODE_ID;
@@ -82,6 +87,7 @@ implementation {
       // We need to reset the ack flag because the message we're about to send requires acknowledgement
       ackRecieved = FALSE;
 
+      // Cache current message.
       currentMsg = sendMsg;
 
       // send message and store returned pointer to free buffer for next message
@@ -99,6 +105,10 @@ implementation {
     uint8_t len = call Packet.payloadLength(msg);
     BlinkToRadioMsg* btrpkt = (BlinkToRadioMsg*)(call Packet.getPayload(msg, len));
 
+    BlinkToRadioMsg* ackpkt;
+
+    bool packetCounterMatch = (btrpkt->counter == counter);
+
     if (btrpkt->type == TYPE_DATA) {
       // Data - display on LEDs...
       call Leds.set(btrpkt->counter);
@@ -109,27 +119,23 @@ implementation {
       call AMPacket.setSource(sendMsg, TOS_NODE_ID);
       call Packet.setPayloadLength(sendMsg, sizeof(BlinkToRadioMsg));
 
-      btrpkt = (BlinkToRadioMsg*)(call Packet.getPayload(sendMsg, sizeof (BlinkToRadioMsg)));
+      ackpkt = (BlinkToRadioMsg*)(call Packet.getPayload(sendMsg, sizeof (BlinkToRadioMsg)));
       // This is an acknowledgement message; set type as such.
-      btrpkt->type = TYPE_ACK;
+      ackpkt->type = TYPE_ACK;
 
-      if (positiveSequence) {
-        btrpkt->seq = 1;
-
-      } else {
-        btrpkt->seq = 0;
-
-      }
-
-      btrpkt->nodeid = TOS_NODE_ID;
-      btrpkt->counter = counter;
+      // Make the rest of the fields of the ack message mirror the recieved data message.
+      ackpkt->seq = btrpkt->seq;
+      ackpkt->nodeid = btrpkt->nodeid;
+      ackpkt->counter = btrpkt->nodeid;
 
       // send message and store returned pointer to free buffer for next message
       ackMsg = call AMSendReceiveI.send(sendMsg);
 
-    } else if (btrpkt->type == TYPE_ACK) {
+    } else if (btrpkt->type == TYPE_ACK && packetCounterMatch) {
       // Acknoweledgement - set bool to allow sending of next packet.
       ackRecieved = TRUE;
+
+      // TODO: Stop ack timeout timer.
     }
 
     return msg; // no need to make msg point to new buffer as msg is no longer needed
