@@ -74,5 +74,6 @@ Temporary Items
 # Executables
 *.exe
 *.out
-*.app
+*.
 
+build
