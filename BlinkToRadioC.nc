@@ -1,5 +1,7 @@
- #include <Timer.h>
- #include "BlinkToRadio.h"
+#include <Timer.h>
+#include "BlinkToRadio.h"
+
+#define ACK_MSG_TIMEOUT_MILLISECONDS 2000
 
 module BlinkToRadioC {
   uses {
@@ -21,12 +23,11 @@ implementation {
   message_t sendMsgBuf;
   message_t* sendMsg = &sendMsgBuf; // initially points to sendMsgBuf
 
-  // TODO: Comment!
-  message_t currentMsgBuf;
-  message_t* currentMsg = &currentMsgBuf; // initially points to curretMsgBuf
-
   message_t ackMsgBuf;
   message_t* ackMsg = &ackMsgBuf; // initially points to ackMsgBuf
+
+  // TODO: Comment!
+  message_t currentMsg;
 
   bool positiveSequence = FALSE;
 
@@ -34,8 +35,7 @@ implementation {
 
   bool isFirstSend = TRUE;
 
-
-  uint16_t ackMsgTimeout = 2000;
+  uint16_t ackMsgTimeout = ACK_MSG_TIMEOUT_MILLISECONDS;
 
   event void Boot.booted() {
     call RadioControl.start();
@@ -90,7 +90,7 @@ implementation {
       ackRecieved = FALSE;
 
       // Cache current message.
-      currentMsg = sendMsg;
+      currentMsg = *sendMsg;
 
       // send message and store returned pointer to free buffer for next message
       sendMsg = call AMSendReceiveI.send(sendMsg);
@@ -109,7 +109,7 @@ implementation {
     // then re-send the 'currentMsg' data...
     if (!ackRecieved) {
       // Re-send 'current message'
-      call AMSendReceiveI.send(currentMsg);
+      call AMSendReceiveI.send(&currentMsg);
 
     }
 
