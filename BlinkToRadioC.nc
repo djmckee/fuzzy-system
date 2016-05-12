@@ -21,6 +21,7 @@ implementation {
   message_t sendMsgBuf;
   message_t* sendMsg = &sendMsgBuf; // initially points to sendMsgBuf
 
+  // TODO: Comment!
   message_t currentMsgBuf;
   message_t* currentMsg = &currentMsgBuf; // initially points to curretMsgBuf
 
@@ -155,5 +156,6 @@ implementation {
 
     return msg; // no need to make msg point to new buffer as msg is no longer needed
   }
+
 
 }
