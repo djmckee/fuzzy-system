@@ -33,7 +33,7 @@ implementation {
 
   bool isFirstSend = TRUE;
 
-  
+
   uint16_t ackMsgTimeout = 2000;
 
   event void Boot.booted() {
@@ -94,10 +94,22 @@ implementation {
       sendMsg = call AMSendReceiveI.send(sendMsg);
 
 
+    } else {
+      // Haven't recieved an acknowledgment yet, start waiting for a timeout...
+      call AckMsgTimer.startOneShot(ackMsgTimeout);
+
     }
+
   }
 
   event void AckMsgTimer.fired() {
+    // If this timer gets fired and the ack message has not been recieved,
+    // then re-send the 'currentMsg' data...
+    if (!ackRecieved) {
+      // Re-send 'current message'
+      call AMSendReceiveI.send(currentMsg);
+
+    }
 
   }
 
@@ -135,7 +147,10 @@ implementation {
       // Acknoweledgement - set bool to allow sending of next packet.
       ackRecieved = TRUE;
 
-      // TODO: Stop ack timeout timer.
+      // Stop ack timeout timer.
+      // Looked up at http://www.tinyos.net/tinyos-2.1.0/doc/nesdoc/mica2/ihtml/tos.lib.timer.Timer.html
+      call AckMsgTimer.stop();
+
     }
 
     return msg; // no need to make msg point to new buffer as msg is no longer needed
