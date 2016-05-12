@@ -26,6 +26,7 @@ implementation {
   message_t ackMsgBuf;
   message_t* ackMsg = &ackMsgBuf; // initially points to ackMsgBuf
 
+  bool positiveSequence = FALSE;
 
   bool ackRecieved = FALSE;
 
@@ -65,7 +66,17 @@ implementation {
       btrpkt = (BlinkToRadioMsg*)(call Packet.getPayload(sendMsg, sizeof (BlinkToRadioMsg)));
       counter++;
       btrpkt->type = TYPE_DATA;
-      btrpkt->seq = 0;
+
+      if (positiveSequence) {
+        btrpkt->seq = 1;
+
+      } else {
+        btrpkt->seq = 0;
+
+      }
+
+      positiveSequence = !positiveSequence;
+
       btrpkt->nodeid = TOS_NODE_ID;
       btrpkt->counter = counter;
 
@@ -100,7 +111,15 @@ implementation {
       btrpkt = (BlinkToRadioMsg*)(call Packet.getPayload(sendMsg, sizeof (BlinkToRadioMsg)));
       // This is an acknowledgement message; set type as such.
       btrpkt->type = TYPE_ACK;
-      btrpkt->seq = 0;
+
+      if (positiveSequence) {
+        btrpkt->seq = 1;
+
+      } else {
+        btrpkt->seq = 0;
+
+      }
+      
       btrpkt->nodeid = TOS_NODE_ID;
       btrpkt->counter = counter;
 
