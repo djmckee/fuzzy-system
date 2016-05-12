@@ -8,6 +8,7 @@ module BlinkToRadioC {
 
     interface Leds;
     interface Timer<TMilli> as Timer0;
+    interface Timer<TMilli> as AckMsgTimer;
 
     interface Packet;
     interface AMPacket;
@@ -45,8 +46,6 @@ implementation {
   event void RadioControl.stopDone(error_t error){
 
   };
-
-
 
   event void Timer0.fired() {
     BlinkToRadioMsg* btrpkt;
@@ -92,7 +91,9 @@ implementation {
     }
   }
 
+  event void AckMsgTimer.fired() {
 
+  }
 
   event message_t* AMSendReceiveI.receive(message_t* msg) {
     uint8_t len = call Packet.payloadLength(msg);
@@ -119,7 +120,7 @@ implementation {
         btrpkt->seq = 0;
 
       }
-      
+
       btrpkt->nodeid = TOS_NODE_ID;
       btrpkt->counter = counter;
 
