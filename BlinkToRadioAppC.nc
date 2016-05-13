@@ -10,6 +10,12 @@ implementation {
   components LedsC;
   components AMSendReceiveC as Radio;
   components new TimerMilliC() as Timer0;
+
+  /**
+   * The acknowledgement message timeout timer, to ensure that acknowledgement
+   * messages have been recieved succesfully or if they haven't, to retry the
+   * sending of the current to-be-delivered message.
+   */
   components new TimerMilliC() as AckMsgTimer;
 
   BlinkToRadioC.Boot -> MainC;
