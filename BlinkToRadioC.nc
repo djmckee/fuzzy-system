@@ -77,7 +77,6 @@ implementation {
 
       }
 
-      // TODO: Fix sequence number mindfuck.
       // Flag the seqeunce number so that it is inverted on next send.
       positiveSequence = !positiveSequence;
 
@@ -96,6 +95,7 @@ implementation {
 
     } else {
       // Haven't recieved an acknowledgment yet, start waiting for a timeout...
+      // Looked up at http://www.tinyos.net/tinyos-2.1.0/doc/nesdoc/mica2/ihtml/tos.lib.timer.Timer.html
       call AckMsgTimer.startOneShot(ackMsgTimeout);
 
     }
@@ -107,6 +107,7 @@ implementation {
     // then re-send the 'currentMsg' data...
     if (!ackRecieved) {
       // Re-send 'current message'
+
       call AMSendReceiveI.send(&currentMsg);
 
     }
