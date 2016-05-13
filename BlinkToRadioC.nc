@@ -3,7 +3,7 @@
 
 /**
  * The acknowledgement message timeout, in milliseconds. The acknowledgement
- * message must be recieved within this time, otherwise the message gets
+ * message must be received within this time, otherwise the message gets
  * re-sent.
  *
  * Defined here because the coursework brief said we could not modify any other
@@ -62,13 +62,13 @@ implementation {
   bool positiveSequence = FALSE;
 
   /**
-   * A flag to state whether or not the acknoweldgement message for the current
-   * message being sent has been recieved.
+   * A flag to state whether or not the acknowledgement message for the current
+   * message being sent has been received.
    *
    * Set to false when a message is about to be sent, and true when the
    * acknowledgement for the message has been received.
    *
-   * Initialsed to false to fail-safe, rather than fail-deadly.
+   * Initialised to false to fail-safe, rather than fail-deadly.
    */
   bool ackReceived = FALSE;
 
@@ -101,7 +101,7 @@ implementation {
   event void Timer0.fired() {
     BlinkToRadioMsg* btrpkt;
 
-    // Only send if this is the first run, or, if an ack has been received...
+    // Only send if this is the first run, or, if an acknowledgement has been received...
     if (isFirstSend || ackReceived) {
       // No longer the first send...
       if (isFirstSend) {
@@ -129,7 +129,7 @@ implementation {
 
       }
 
-      // Flag the seqeunce number so that it is inverted on next send.
+      // Flag the sequence number so that it is inverted on next send.
       positiveSequence = !positiveSequence;
 
       // Send to the desired mote that's been defined in BlinkToRadio.h
@@ -139,7 +139,7 @@ implementation {
       counter++;
       btrpkt->counter = counter;
 
-      // We need to reset the ack flag because the message we're about to send requires acknowledgement
+      // We need to reset the acknowledgement flag because the message we're about to send requires acknowledgement
       ackReceived = FALSE;
 
       // Cache current message.
@@ -159,7 +159,7 @@ implementation {
   }
 
   /**
-   * The timout timer that I implemented to ensure that acknowledge messages
+   * The timeout timer that I implemented to ensure that acknowledge messages
    * have been received.
    */
   event void AckMsgTimer.fired() {
@@ -179,7 +179,7 @@ implementation {
 
     BlinkToRadioMsg* ackpkt;
 
-    // Does the packet recieved have a counter field value that matches the current counter value?
+    // Does the packet received have a counter field value that matches the current counter value?
     // If so, and if the message is an acknowledgement, then this is the acknowledgement corresponding
     // to the message being sent, and should be flagged as such.
     bool packetCounterMatch = (btrpkt->counter == counter);
@@ -197,7 +197,7 @@ implementation {
 
       // Create the acknowledgement packet, mirroring the packet sent
       ackpkt = (BlinkToRadioMsg*)(call Packet.getPayload(sendMsg, sizeof (BlinkToRadioMsg)));
-      
+
       // This is an acknowledgement message; set type as such.
       ackpkt->type = TYPE_ACK;
 
@@ -210,7 +210,7 @@ implementation {
       ackMsg = call AMSendReceiveI.send(sendMsg);
 
     } else if (btrpkt->type == TYPE_ACK && packetCounterMatch) {
-      // Acknoweledgement type which matches the count of the ack we need
+      // Acknowledgement type which matches the count of the ack we need
       // - set bool to allow sending of next packet.
       ackReceived = TRUE;
 

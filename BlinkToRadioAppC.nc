@@ -13,7 +13,7 @@ implementation {
 
   /**
    * The acknowledgement message timeout timer, to ensure that acknowledgement
-   * messages have been recieved succesfully or if they haven't, to retry the
+   * messages have been received succesfully or if they haven't, to retry the
    * sending of the current to-be-delivered message.
    */
   components new TimerMilliC() as AckMsgTimer;
