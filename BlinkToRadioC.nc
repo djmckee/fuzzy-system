@@ -31,7 +31,7 @@ implementation {
 
   bool positiveSequence = FALSE;
 
-  bool ackRecieved = FALSE;
+  bool ackReceived = FALSE;
 
   bool isFirstSend = TRUE;
 
@@ -52,8 +52,8 @@ implementation {
   event void Timer0.fired() {
     BlinkToRadioMsg* btrpkt;
 
-    // Only send if this is the first run, or, if an ack has been recieved...
-    if (isFirstSend || ackRecieved) {
+    // Only send if this is the first run, or, if an ack has been received...
+    if (isFirstSend || ackReceived) {
       // No longer the first send...
       if (isFirstSend) {
         isFirstSend = FALSE;
@@ -84,7 +84,7 @@ implementation {
       btrpkt->counter = counter;
 
       // We need to reset the ack flag because the message we're about to send requires acknowledgement
-      ackRecieved = FALSE;
+      ackReceived = FALSE;
 
       // Cache current message.
       currentMsg = *sendMsg;
@@ -94,7 +94,7 @@ implementation {
 
 
     } else {
-      // Haven't recieved an acknowledgment yet, start waiting for a timeout...
+      // Haven't received an acknowledgment yet, start waiting for a timeout...
       // Looked up at http://www.tinyos.net/tinyos-2.1.0/doc/nesdoc/mica2/ihtml/tos.lib.timer.Timer.html
       call AckMsgTimer.startOneShot(ackMsgTimeout);
 
@@ -103,9 +103,9 @@ implementation {
   }
 
   event void AckMsgTimer.fired() {
-    // If this timer gets fired and the ack message has not been recieved,
+    // If this timer gets fired and the ack message has not been received,
     // then re-send the 'currentMsg' data...
-    if (!ackRecieved) {
+    if (!ackReceived) {
       // Re-send 'current message'
 
       call AMSendReceiveI.send(&currentMsg);
@@ -126,7 +126,7 @@ implementation {
       // Data - display on LEDs...
       call Leds.set(btrpkt->counter);
 
-      // Send acknowledgement message - we've recieved and utilised the data packet...
+      // Send acknowledgement message - we've received and utilised the data packet...
       call AMPacket.setType(sendMsg, AM_BLINKTORADIO);
       call AMPacket.setDestination(sendMsg, DEST_ECHO);
       call AMPacket.setSource(sendMsg, TOS_NODE_ID);
@@ -136,7 +136,7 @@ implementation {
       // This is an acknowledgement message; set type as such.
       ackpkt->type = TYPE_ACK;
 
-      // Make the rest of the fields of the ack message mirror the recieved data message.
+      // Make the rest of the fields of the ack message mirror the received data message.
       ackpkt->seq = btrpkt->seq;
       ackpkt->nodeid = btrpkt->nodeid;
       ackpkt->counter = btrpkt->nodeid;
@@ -146,7 +146,7 @@ implementation {
 
     } else if (btrpkt->type == TYPE_ACK && packetCounterMatch) {
       // Acknoweledgement - set bool to allow sending of next packet.
-      ackRecieved = TRUE;
+      ackReceived = TRUE;
 
       // Stop ack timeout timer.
       // Looked up at http://www.tinyos.net/tinyos-2.1.0/doc/nesdoc/mica2/ihtml/tos.lib.timer.Timer.html
